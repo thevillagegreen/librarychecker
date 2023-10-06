@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <form method="post">
+    <label for="content">Path to library:</label>
+    <br>
+    <input  name="library_path"
+            placeholder="Library Path"
+            value="{{ request.form['library_path'] }}"</input>
+    <br>
+    <button type="submit">Run</button>
+  </form>
+{% endblock %}

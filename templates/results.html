@@ -1,0 +1,55 @@
+
+{% extends 'base.html' %}
+{% block content %}
+  <div class="content">
+    {% if library_path %}
+      <p>Library path: {{ library_path }}</p>
+      <p>Total Letter Folders: {{ results_obj["stats"]["letter_count"] }}</p>
+      <p>Total Non-Ascii Letter Folders: {{ results_obj["stats"]["nonascii_letter_count"] }}</p>
+      <p>Total Artist Folders: {{ results_obj["stats"]["artist_count"] }}</p>
+    {% else %}
+      <h1>No library path provided!</h1>
+    {% endif %}
+    <ul class="collapse artists">
+      {%for artist in results_obj["artist"]%}
+        <li>
+          {{artist}} ({{ results_obj["artist"][artist]["albums"]|length }})
+          <ul class="artist-fails">
+            {% if not results_obj["artist"][artist]["no_fails"] %}
+              <li id="hasfails">
+                Arist Folder Fails
+                <ul class="artist-fails-list" id="fail">
+                  {%for artist_fail in results_obj["artist"][artist]["fails"]%}
+                    {% if artist_fail %}
+                      <li>{{artist_fail}}</li>
+                    {% endif %}
+                  {%endfor%}
+                </ul>
+              </li>
+            {% endif %}
+
+            {%for album in results_obj["artist"][artist]["albums"]%}
+              {% if not results_obj["artist"][artist]["albums"][album]["no_fails"] %}
+                <li id="hasfails">
+                  {{album}} 
+                  <ul>
+                    {% for album_fail in results_obj["artist"][artist]["albums"][album]["fails"] %}
+                      <li>{{album_fail}}</li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% else %}
+                <li id="nofails">
+                  {{album}}
+                </li>
+              {% endif %}
+            {%endfor%}
+          </ul>
+        </li>
+      {%endfor%}
+    </ul>
+    
+
+
+  </div>
+{% endblock %}
