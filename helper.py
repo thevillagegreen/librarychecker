@@ -87,6 +87,11 @@ def extract_album_contents(path):
       # add flac files to contents
       elif ext == '.flac':
         m_flac = FLAC(file_path)
+        
+        if m_flac.pictures:
+          m_flac.clear_pictures()
+          m_flac.save()
+
         content['flac'].append({
           'file_type':'flac',
           'name': file,
@@ -99,7 +104,9 @@ def extract_album_contents(path):
           'track_number': try_m_flac(m_flac, 'tracknumber'),
           'disc_total': try_m_flac(m_flac, 'disctotal'),
           'track_total': try_m_flac(m_flac, 'tracktotal'),
-        }) 
+          'pictures': try_m_flac(m_flac, 'pictures')
+        })
+        
       
       # add non-flac audio files to contents
       elif any(ext in s for s in audio_formats):

@@ -12,7 +12,6 @@ def non_folder_contents(path, contents):
   non_folder = False
   for item in contents:
     if h.is_file(path + "/" + item):
-      print(path)
       non_folder = True
 
   if non_folder:

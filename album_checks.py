@@ -1,5 +1,6 @@
 import helper as h
-import re
+import re, os, sys
+from subprocess import *
 
 #============== UNIVERSAL CHECKS
 
@@ -83,16 +84,69 @@ def flac_format(flac):
   if flac:
     for f in flac:
       if not pattern.search(f['name']) or f['name'][:2].startswith("0"):
-        return "This album is contains flac files with incorrect naming."
+        return "This album contains flac files with incorrect naming."
+
+def flac_dupes(flac):
+  if flac:
+    for f in flac:
+      if '(1)' in f["name"] or '(2)' in f["name"]:
+        return "This album contains flac files that may be duplicates."
+
+def flac_embeds(flac):
+  if flac:
+    for f in flac:
+      if f["pictures"]:
+        return "This album contains flac files with embedded art."
 
 #============== CD CHECKS
+def CD_logs(name, logs):
+  if logs:
+    if "CD-Unchecked" in name:
+      perfect_logs = True
+      for log in logs:
+        logrun = Popen("logchecker analyze \""+  log["path"] + "\" | head -4 | tail -1", shell=True, stdout=PIPE).communicate()[0]
+        try:
+          score = int(''.join(filter(str.isdigit, logrun.decode("utf-8").rstrip())))
+          if score < 100:
+            perfect_logs = False
+        except:
+          return "Unchecked CD log error"
+
+        
+        
+      if perfect_logs:
+        return "Unchecked CD has perfect logs"
+      else:
+        return "Unchecked CD has imperfect logs"
+
+  else:
+    return "CD folder contains no logs"
+
+def CD_cues(cues):
+  if not cues:
+    return "CD folder contains no cues"
+
+def CD_counts(contents_dict, tracks):
+  if contents_dict["logs"] and contents_dict["cues"]:
+    if contents_dict["flac"]:
+      if len(tracks) != len(contents_dict["logs"]) or len(tracks) != len(contents_dict["cues"]):
+        return "CD folder is missing a log/cue"
+
+def CD_names(contents_dict):
+  bad_names =  False
+  if contents_dict["logs"] and contents_dict["cues"]:
+    for log in contents_dict["logs"]:
+      if log["name"][0:2] != 'CD' or not log["name"][2:len(log["name"])-4].isnumeric():
+        bad_names = True
+    for cue in contents_dict["cues"]:
+      if cue["name"][0:2] != 'CD' or not cue["name"][2:len(cue["name"])-4].isnumeric():
+        bad_names = True
+  if bad_names:
+    return "CD folder included incorrectly names log/cues"
 
 #============== WEB CHECKS
 
 #============== TAPE/VINYL CHECKS
-
-
-
 
 def run(name, path):
   album_results_dict = {
@@ -123,6 +177,14 @@ def run(name, path):
   album_results_dict["fails"].append(flac_mixed(contents_dict["flac"]))
   album_results_dict["fails"].append(tracks_continuous(contents_dict["flac"], track_arr))
   album_results_dict["fails"].append(flac_format(contents_dict["flac"]))
+  album_results_dict["fails"].append(flac_dupes(contents_dict["flac"]))
+  album_results_dict["fails"].append(flac_embeds(contents_dict["flac"]))
+
+  if album_results_dict["media_type"] == "CD":
+    album_results_dict["fails"].append(CD_logs(name, contents_dict["logs"]))
+    album_results_dict["fails"].append(CD_cues(contents_dict["cues"]))
+    album_results_dict["fails"].append(CD_counts(contents_dict, track_arr))
+    album_results_dict["fails"].append(CD_names(contents_dict))
 
 
 

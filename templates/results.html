@@ -7,13 +7,14 @@
       <p>Total Letter Folders: {{ results_obj["stats"]["letter_count"] }}</p>
       <p>Total Non-Ascii Letter Folders: {{ results_obj["stats"]["nonascii_letter_count"] }}</p>
       <p>Total Artist Folders: {{ results_obj["stats"]["artist_count"] }}</p>
+      <p>Total Fails: {{ results_obj["stats"]["total_fails"] }}</p>
     {% else %}
       <h1>No library path provided!</h1>
     {% endif %}
     <ul class="collapse artists">
       {%for artist in results_obj["artist"]%}
         <li>
-          {{artist}} ({{ results_obj["artist"][artist]["albums"]|length }})
+          {{artist}} ({{ results_obj["artist"][artist]["albums"]|length }}, {{ results_obj["artist"][artist]["fails_count"] }})
           <ul class="artist-fails">
             {% if not results_obj["artist"][artist]["no_fails"] %}
               <li id="hasfails">

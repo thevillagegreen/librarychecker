@@ -50,12 +50,14 @@ def run(library_path):
       artist_arr.append({"name":artist, "path":letter_path+"/"+artist})
   
   for artist in artist_arr:
+    print("Checking artist: " + artist["name"])
     results_dict["stats"]["artist_count"] += 1
     
     results_dict["artist"][artist["name"]] = {
       "name": artist["name"],
       "path": artist["path"],
       "albums": {},
+      "fails_count": 0,
       "fails": [],
       "no_fails": False
     }
@@ -71,12 +73,9 @@ def run(library_path):
       if not os.path.isfile(artist["path"] + "/" + album):
         
         album_results_obj = album_checks.run(album, artist["path"] + "/" + album)
-
         results_dict["artist"][artist["name"]]["albums"][album] = album_results_obj
-        
-        
-  
-  for album in results_dict["artist"]["Ariel Pink"]["albums"]:
-    print(results_dict["artist"]["Ariel Pink"]["albums"][album])
+        results_dict["artist"][artist["name"]]["fails_count"] += len(album_results_obj["fails"])
+
+    results_dict["stats"]["total_fails"] += (len(results_dict["artist"][artist["name"]]["fails"]) + results_dict["artist"][artist["name"]]["fails_count"])
 
   return results_dict
