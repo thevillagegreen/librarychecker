@@ -1,9 +1,11 @@
 import os, pathlib
 from mutagen.flac import FLAC
 from PIL import Image
+import csv
 
 audio_formats = ['.3gp', '.8svx', '.aa','.aac','.aax','.act','.aiff','.alac','.amr','.ape','.au','.awb','.cda','.dss','.dvf','.flac','.gsm','.iklax','.ivs','.m4a','.m4b','.m4p','.mmf','.mp3','.mpc','.msv','.nmf','.ogg','.oga','.mogg','.opus','.ra','.rm','.raw','.rf64','.sln','.tta','.voc','.vox','.wav','.webm','.wma','.wv']
 image_formats = ['.jpg','.jpeg','.png','.gif','.webp','.tiff','.psd','.raw','.bmp','.heif',',indd','.svg','.ai','.eps']
+
 
 def try_dir(path):
   try:
@@ -183,3 +185,20 @@ def remove_nones(arr):
     if not item:
       arr.remove(item)
   return arr
+
+def fail_to_string(fail):
+  fails_reader = csv.DictReader(open('fails.csv'))
+  return_str = "Unrecognized fail code."
+  for row in fails_reader:
+    if fail == row["fail"]:
+      return_str = row["info_str"]
+  return return_str
+
+
+def check_exceptions(album, fail):
+  exceptions_reader = csv.DictReader(open('exceptions.csv'))
+  found = False
+  for row in exceptions_reader:
+    if row["album"] == album and row["fail"] == fail:
+      found = True
+  return found

@@ -7,12 +7,12 @@ from subprocess import *
 # Folder has no contents
 def empty_folder(contents):
   if not contents:
-    return "Folder is empty"
+    return "AlbumEmpty"
 
 # Folder name is longer than 100 char
 def long_name(name):
   if len(name) > 180:
-    return "Folder name too long"
+    return "AlbumNameLong"
 
 def cover_missing(images):
   cover_found = False
@@ -20,45 +20,45 @@ def cover_missing(images):
     if img["name"] in ['cover.jpg', 'cover.png']:
       cover_found = True
   if not cover_found:
-    return "No cover found"
+    return "AlbumNoCover"
 
 def cover_square(images):
   # Check only performed with proper cover
   if len(images) == 1 and images[0]["name"] in ['cover.jpg', 'cover.png']:
     if images[0]["size"][0] != images[0]["size"][1]:
-      return "Cover not square"
+      return "AlbumCoverShape"
 
 def cover_size(images):
   # Check only performed with proper cover
   if len(images) == 1 and images[0]["name"] in ['cover.jpg', 'cover.png']:
     if images[0]["size"][0] > 10000 or images[0]["size"][1] > 10000:
-      return "Cover too large"
+      return "AlbumCoverLarge"
     elif images[0]["size"][0] < 600 or images[0]["size"][1] < 600:
-      return "Cover too small"
+      return "AlbumCoverSmall"
 
 def cover_excess(images):
   if len(images) > 1:
-    return "Too many images"
+    return "AlbumManyImages"
 
 def folder_excess(folders):
   if len(folders) > 1:
-    return "Too many folders"
+    return "AlbumManyFolders"
 
 def artwork_folder(folders):
   if len(folders) == 1 and folders[0]["name"] not in ["Artwork"]:
-    return "Incorrect Artwork folder name"
+    return "AlbumArtworkName"
 
 def media_missing(media_type):
   if not media_type:
-    return "This album has no media in folder name"
+    return "AlbumNoMedia"
 
 def audio_present(flac, non_flac):
   if not flac and not non_flac:
-    return "This folder has no audio files"
+    return "AlbumNoAudio"
 
 def audio_mixed(flac, non_flac):
   if flac and non_flac:
-    return "This folder has both flac and non-flac audio files"
+    return "AlbumMixedAudio"
 
 def flac_mixed(flac):
   if flac:
@@ -66,7 +66,7 @@ def flac_mixed(flac):
     ss = flac[0]['sample_size']
     for f in flac:
       if f['sample_rate'] != sr or f['sample_size'] != ss:
-        return "This folder has mixed flac formats"
+        return "AlbumMixedFlac"
 
 def tracks_continuous(flac, tracks):
   if flac and tracks:
@@ -74,29 +74,32 @@ def tracks_continuous(flac, tracks):
         if disc: #TO DO: This does account for the first or last track missing
           range_list =list(range(min(disc), max(disc)+1))
           if range_list != sorted(disc):
-            return "This album contains non-continuous tracks."
+            return "AlbumNoncon"
   
   elif flac and not tracks:
-    return "This album is missing track/disc numbering information."
+    return "AlbumNoInfo"
 
 def flac_format(flac):
   pattern = re.compile(r'^\d{1,2}[-]\d{2,3}[.]', re.I)
   if flac:
     for f in flac:
       if not pattern.search(f['name']) or f['name'][:2].startswith("0"):
-        return "This album contains flac files with incorrect naming."
+        return "AlbumFlacName"
 
 def flac_dupes(flac):
   if flac:
     for f in flac:
       if '(1)' in f["name"] or '(2)' in f["name"]:
-        return "This album contains flac files that may be duplicates."
+        return "AlbumFlacDupes"
 
 def flac_embeds(flac):
   if flac:
     for f in flac:
       if f["pictures"]:
-        return "This album contains flac files with embedded art."
+        return "AlbumFlacEmbed"
+
+# check if there are different versions, are they labeled
+# check that non flac have quality info
 
 #============== CD CHECKS
 def CD_logs(name, logs):
@@ -110,27 +113,27 @@ def CD_logs(name, logs):
           if score < 100:
             perfect_logs = False
         except:
-          return "Unchecked CD log error"
+          return "AlbumCDError"
 
         
         
       if perfect_logs:
-        return "Unchecked CD has perfect logs"
+        return "AlbumCDPerfect"
       else:
-        return "Unchecked CD has imperfect logs"
+        return "AlbumCDNotPerfect"
 
   else:
-    return "CD folder contains no logs"
+    return "AlbumCDNoLogs"
 
 def CD_cues(cues):
   if not cues:
-    return "CD folder contains no cues"
+    return "AlbumCDNoCues"
 
 def CD_counts(contents_dict, tracks):
   if contents_dict["logs"] and contents_dict["cues"]:
     if contents_dict["flac"]:
       if len(tracks) != len(contents_dict["logs"]) or len(tracks) != len(contents_dict["cues"]):
-        return "CD folder is missing a log/cue"
+        return "AlbumCDMissing"
 
 def CD_names(contents_dict):
   bad_names =  False
@@ -142,7 +145,11 @@ def CD_names(contents_dict):
       if cue["name"][0:2] != 'CD' or not cue["name"][2:len(cue["name"])-4].isnumeric():
         bad_names = True
   if bad_names:
-    return "CD folder included incorrectly names log/cues"
+    return "AlbumCDNames"
+
+  # Todo: check m3u
+  # if there's a CD and Web version
+
 
 #============== WEB CHECKS
 
@@ -192,6 +199,23 @@ def run(name, path):
   if all(x is None for x in album_results_dict["fails"]):
     album_results_dict["no_fails"] = True
 
+
   h.remove_nones(album_results_dict["fails"])
+  
+  for idx, fail in enumerate(album_results_dict["fails"]):
+    if h.check_exceptions(album_results_dict["name"], fail):
+      print(album_results_dict["name"])
+      del album_results_dict["fails"][idx]
+
+  for idx, fail in enumerate(album_results_dict["fails"]):
+    new_value = h.fail_to_string(fail)
+    album_results_dict["fails"][idx] = new_value
+
+  
+
+    
+
+    
+       
 
   return album_results_dict

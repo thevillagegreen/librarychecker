@@ -53,7 +53,7 @@ def run(library_path):
     print("Checking artist: " + artist["name"])
     results_dict["stats"]["artist_count"] += 1
     
-    results_dict["artist"][artist["name"]] = {
+    new_artist_obj = {
       "name": artist["name"],
       "path": artist["path"],
       "albums": {},
@@ -62,10 +62,10 @@ def run(library_path):
       "no_fails": False
     }
 
-    results_dict["artist"][artist["name"]]["fails"] = artist_checks.run(artist["name"], artist["path"])["fails"]
+    new_artist_obj["fails"] = artist_checks.run(artist["name"], artist["path"])["fails"]
     
-    if all(x is None for x in results_dict["artist"][artist["name"]]["fails"]):
-      results_dict["artist"][artist["name"]]["no_fails"] = True
+    if all(x is None for x in new_artist_obj["fails"]):
+      new_artist_obj["no_fails"] = True
 
     album_arr = h.try_dir(artist["path"])
     
@@ -73,9 +73,13 @@ def run(library_path):
       if not os.path.isfile(artist["path"] + "/" + album):
         
         album_results_obj = album_checks.run(album, artist["path"] + "/" + album)
-        results_dict["artist"][artist["name"]]["albums"][album] = album_results_obj
-        results_dict["artist"][artist["name"]]["fails_count"] += len(album_results_obj["fails"])
+        new_artist_obj["albums"][album] = album_results_obj
+        new_artist_obj["fails_count"] += len(album_results_obj["fails"])
+    
+    new_artist_obj["fails_count"] += len(h.remove_nones(new_artist_obj["fails"]))
 
-    results_dict["stats"]["total_fails"] += (len(results_dict["artist"][artist["name"]]["fails"]) + results_dict["artist"][artist["name"]]["fails_count"])
+    results_dict["stats"]["total_fails"] += (len(new_artist_obj["fails"]) + new_artist_obj["fails_count"])
+    if new_artist_obj["fails_count"] > 0:
+      results_dict["artist"][artist["name"]] = new_artist_obj
 
   return results_dict

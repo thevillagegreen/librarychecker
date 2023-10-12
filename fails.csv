@@ -1,0 +1,28 @@
+fail,info_str
+AlbumEmpty,Album folder is empty.
+AlbumNameLong,Album name is too long (over 180 char).
+AlbumNoCover,Album has no cover.
+AlbumCoverShape,Album cover is not square.
+AlbumCoverLarge,Album cover is too large.
+AlbumCoverSmall,Album cover is too small.
+AlbumManyImages,Album has too many images.
+AlbumManyFolders,Album has too many folders.
+AlbumArtworkName,Album artwork folder misnamed.
+AlbumNoMedia,Album has no media type.
+AlbumNoAudio,Album has no audio files.
+AlbumMixedAudio,Album folder has both flac and non-flac audio files.
+AlbumMixedFlac,Album folder has mixed flac formats.
+AlbumNoncon,Album contains non-continuous tracks.
+AlbumNoInfo,Album is missing track/disc numbering information.
+AlbumFlacName,Album contains flac files with incorrect naming.
+AlbumFlacDupes,Album contains flac files that may be dupes.
+AlbumFlacEmbed,Album contains flac files that have embedded artwork.
+AlbumCDError,Album has an unchecked CD log error.
+AlbumCDPerfect,Album is an unchecked CD that has perfect logs.
+AlbumCDNotPerfect,Album is an unchecked CD that does NOT have perfect logs.
+AlbumCDNoLogs,Album is a CD that contains no log files.
+AlbumCDNoCues,Album is a CD that contains no cue files.
+AlbumCDMissing,Album is a CD that is missing either logs or cues.
+AlbumCDNames,Album is a CD that has misnamed logs or cues.
+
+
